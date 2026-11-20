@@ -12,6 +12,7 @@ import {
   Clock,
   ArrowRight,
   ShieldCheck,
+  ShieldAlert,
   TrendingUp,
   MapPin,
   ExternalLink,
@@ -184,7 +185,7 @@ const WARD_SCOREBOARD = [
 ];
 
 export default function HomePage() {
-  const { navigateWithFire, triggerFire, fireSoundEnabled, setFireSoundEnabled } = useFire();
+  const { navigateWithFire } = useFire();
   const [activeShowcase, setActiveShowcase] = useState(SHOWCASE_TABS[0]);
   const [activeScenario, setActiveScenario] = useState(SIMULATOR_SCENARIOS[0]);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -292,39 +293,6 @@ export default function HomePage() {
             >
               <span>Live Public Map</span>
               <ExternalLink className="w-4 h-4 text-cyan-400" />
-            </button>
-          </motion.div>
-
-          {/* Audio & Fire Quick-Test Controls */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
-            className="pt-4 flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-slate-400"
-          >
-            <button
-              onClick={() => triggerFire()}
-              className="px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 text-amber-300 flex items-center gap-2 cursor-pointer transition-all"
-            >
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
-              <span>Test Paper Burn Animation</span>
-            </button>
-
-            <button
-              onClick={() => setFireSoundEnabled(!fireSoundEnabled)}
-              className="px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 text-slate-300 flex items-center gap-2 cursor-pointer transition-all"
-            >
-              {fireSoundEnabled ? (
-                <>
-                  <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Crackle Sound: ON</span>
-                </>
-              ) : (
-                <>
-                  <VolumeX className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Crackle Sound: OFF</span>
-                </>
-              )}
             </button>
           </motion.div>
         </div>
@@ -779,11 +747,11 @@ export default function HomePage() {
 
               <div className="flex items-center justify-between pt-2">
                 <button
-                  onClick={() => triggerFire()}
+                  onClick={() => navigateWithFire("/admin/dashboard")}
                   className="flame-button px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
                 >
-                  <Flame className="w-4 h-4" />
-                  <span>Simulate Real-time Dispatch</span>
+                  <ShieldAlert className="w-4 h-4" />
+                  <span>Inspect in Admin Console</span>
                 </button>
 
                 <button
@@ -1057,7 +1025,7 @@ export default function HomePage() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="relative rounded-3xl overflow-hidden p-8 sm:p-12 border border-amber-500/40 bg-gradient-to-r from-amber-950/60 via-slate-900 to-orange-950/60 text-center space-y-6 shadow-2xl shadow-amber-500/10">
           <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/30">
-            <Flame className="w-8 h-8" />
+            <Eye className="w-8 h-8" />
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-black text-white">

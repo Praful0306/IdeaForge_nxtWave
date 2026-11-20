@@ -27,7 +27,7 @@ import {
   Shield,
   Layers,
   MapPin,
-  Flame,
+  PlusCircle,
   ArrowRight,
   RefreshCw,
 } from "lucide-react";
@@ -172,7 +172,7 @@ export default function DashboardPage() {
             onClick={() => navigateWithFire("/report")}
             className="flame-button px-5 py-3 rounded-2xl text-xs font-black flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
           >
-            <Flame className="w-4 h-4" />
+            <PlusCircle className="w-4 h-4" />
             <span>Report Hazard</span>
           </button>
 

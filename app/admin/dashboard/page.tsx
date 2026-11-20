@@ -46,7 +46,7 @@ const AVAILABLE_CREWS: Record<string, string[]> = {
 
 export default function AdminDashboardPage() {
   const { toast } = useToast();
-  const { navigateWithFire, triggerFire } = useFire();
+  const { navigateWithFire } = useFire();
 
   const [complaints, setComplaints] = useState<ComplaintRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,7 +149,6 @@ export default function AdminDashboardPage() {
     setTimeout(() => {
       setVerifyingAI(false);
       setVerifyComplete(true);
-      triggerFire(); // Trigger flame transition effect on verify!
       if (selectedTicketForVerify) {
         handleStatusChange(selectedTicketForVerify.id, "resolved");
       }

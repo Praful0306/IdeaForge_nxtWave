@@ -30,7 +30,7 @@ import { translations, Locale } from "@/lib/i18n";
 
 export default function OfficerPage() {
   const { toast } = useToast();
-  const { navigateWithFire, triggerFire } = useFire();
+  const { navigateWithFire } = useFire();
   const [locale, setLocale] = useState<Locale>("en");
 
   // Auth state
@@ -81,7 +81,6 @@ export default function OfficerPage() {
 
       sessionStorage.setItem("officer_logged_in", "true");
       setIsAuthenticated(true);
-      triggerFire();
       toast({
         title: "Officer Access Granted",
         description: "Welcome to Municipal Triage Command.",
@@ -177,7 +176,6 @@ export default function OfficerPage() {
 
       if (!res.ok) throw new Error("Failed to submit resolution");
 
-      triggerFire();
       toast({
         title: actionType === "resolve" ? "Ticket Resolved & Closed" : "Ticket Marked Rejected",
         description: `Ticket #${selectedComplaint.ticket} has been updated.`,

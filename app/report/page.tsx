@@ -18,7 +18,7 @@ import {
   Layers,
   Clock,
   Sparkles,
-  Flame,
+  Send,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ import { translations, Locale } from "@/lib/i18n";
 
 export default function ReportPage() {
   const { toast } = useToast();
-  const { navigateWithFire, triggerFire } = useFire();
+  const { navigateWithFire } = useFire();
   const [locale, setLocale] = useState<Locale>("en");
 
   // Input states
@@ -249,7 +249,6 @@ export default function ReportPage() {
       }
 
       setResult(data);
-      triggerFire(); // Fire transition on successful submission!
       toast({
         title: data.merged ? "Report Merged (75m Deduplication)" : "Grievance Ticket Generated",
         description: `Ticket ID: #${data.ticket}`,
@@ -632,7 +631,7 @@ export default function ReportPage() {
                 disabled={submitting || (!photoBlob && !audioBlob && !textDescription.trim())}
                 className="flame-button w-full h-12 rounded-2xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 disabled:opacity-50"
               >
-                <Flame className="w-4 h-4" />
+                <Send className="w-4 h-4" />
                 <span>{t.reportCTA}</span>
               </button>
             </div>

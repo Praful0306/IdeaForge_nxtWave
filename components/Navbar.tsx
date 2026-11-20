@@ -9,7 +9,6 @@ import {
   BarChart3,
   PlusCircle,
   Globe,
-  Flame,
   User,
   Sliders,
   LogIn,
@@ -21,7 +20,7 @@ import { translations, Locale } from "@/lib/i18n";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { navigateWithFire, triggerFire } = useFire();
+  const { navigateWithFire } = useFire();
   const [locale, setLocale] = useState<Locale>("en");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<"guest" | "citizen" | "admin">("guest");
@@ -163,18 +162,8 @@ export default function Navbar() {
           </a>
         </nav>
 
-        {/* Action Controls & Burning Button */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2">
-          {/* Flame Sweep Trigger Button */}
-          <button
-            onClick={() => triggerFire()}
-            title="Ignite screen with diagonal burning flame transition"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-orange-950/40 border border-orange-500/40 text-orange-400 text-xs font-bold hover:bg-orange-900/60 transition-all cursor-pointer shadow-sm shadow-orange-500/10 active:scale-95"
-          >
-            <Flame className="w-3.5 h-3.5 text-orange-500 animate-bounce" />
-            <span className="hidden sm:inline">Burn Screen</span>
-          </button>
-
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
