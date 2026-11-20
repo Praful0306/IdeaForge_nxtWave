@@ -6,12 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@google/genai": "^3.6.1",
     "@supabase/supabase-js": "^2.119.2",
     "clsx": "^2.1.1",
+    "framer-motion": "^14.14.0",
     "groq-sdk": "^1.6.0",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",

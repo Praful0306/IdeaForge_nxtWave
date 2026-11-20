@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
+import { FireTransitionProvider } from "@/components/FireTransition";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "NagarNetra — AI Civic Grievance & Infrastructure Triage",
+  title: "NagarNetra — Urban Infrastructure AI Triage & Telemetry",
   description:
-    "Snap, speak or type civic issues in any Indian language. AI rates severity, detects duplicates within 75m, and routes directly to municipal departments.",
+    "Report road damage, live wires, pipe bursts, and civic hazards in seconds. Multimodal AI triages danger, collapses duplicates within 75m, and enforces statutory municipal SLAs.",
   openGraph: {
-    title: "NagarNetra — AI Civic Grievance Triage",
-    description: "AI-driven civic triage: reporting, duplicate clustering, and SLA accountability for Indian cities.",
+    title: "NagarNetra — City Infrastructure Triage",
+    description: "Multimodal civic triage for Indian cities powered by PostGIS, Groq, and Gemini.",
     type: "website",
   },
 };
@@ -20,29 +21,41 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+    <html lang="en" className="dark">
+      <body className="antialiased min-h-screen flex flex-col bg-[#070A12] text-slate-100 selection:bg-amber-500 selection:text-black">
         <ToastProvider>
-          <Navbar />
-          <main className="flex-1 pb-16">{children}</main>
-          <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-blue-700">NagarNetra</span>
-                <span>• Civic Grievance Triage</span>
+          <FireTransitionProvider>
+            <Navbar />
+            <main className="flex-1 pb-16">{children}</main>
+            <footer className="border-t border-slate-800/80 bg-[#090E1A]/90 py-8 text-xs text-slate-400">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-black font-black text-sm shadow-md shadow-amber-500/20">
+                    NN
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-slate-200 text-sm">NagarNetra (नगरनेत्र)</div>
+                    <div className="text-[11px] text-slate-500">Autonomous Civic Grievance Triage System</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-6 text-slate-400 font-medium">
+                  <a href="/citizen/dashboard" className="hover:text-amber-400 transition-colors">Citizen Portal</a>
+                  <span>•</span>
+                  <a href="/admin/dashboard" className="hover:text-amber-400 transition-colors">Admin Command</a>
+                  <span>•</span>
+                  <a href="/dashboard" className="hover:text-amber-400 transition-colors">Public Map</a>
+                  <span>•</span>
+                  <a href="/report" className="hover:text-amber-400 transition-colors">Report Hazard</a>
+                </div>
+
+                <div className="text-[11px] text-slate-500 text-center md:text-right">
+                  <div>© {new Date().getFullYear()} NagarNetra • MoRTH & CPGRAMS Aligned</div>
+                  <div className="text-slate-600 mt-0.5">PostGIS • Groq Llama 4 • Google Gemini • Leaflet</div>
+                </div>
               </div>
-              <div className="flex items-center gap-4 text-slate-500">
-                <span>© {new Date().getFullYear()} NagarNetra</span>
-                <span>•</span>
-                <a href="/dashboard" className="hover:text-blue-600 underline-offset-2 hover:underline">Dashboard</a>
-                <span>•</span>
-                <a href="/officer" className="hover:text-blue-600 underline-offset-2 hover:underline">Officer Portal</a>
-              </div>
-              <div className="text-[11px] text-slate-400">
-                Built with Next.js, Supabase PostGIS, Groq & Gemini
-              </div>
-            </div>
-          </footer>
+            </footer>
+          </FireTransitionProvider>
         </ToastProvider>
       </body>
     </html>

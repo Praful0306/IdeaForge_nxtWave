@@ -18,16 +18,20 @@ import {
   Layers,
   Clock,
   Sparkles,
+  Flame,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
+import { useFire } from "@/components/FireTransition";
 import { translations, Locale } from "@/lib/i18n";
 
 export default function ReportPage() {
   const { toast } = useToast();
+  const { navigateWithFire, triggerFire } = useFire();
   const [locale, setLocale] = useState<Locale>("en");
 
   // Input states
@@ -45,12 +49,12 @@ export default function ReportPage() {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // GPS Location state (defaulting to Bengaluru central if denied)
+  // GPS Location state
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationName, setLocationName] = useState<string>("Detecting GPS location...");
+  const [locationName, setLocationName] = useState<string>("Detecting GPS telemetry...");
   const [locationError, setLocationError] = useState(false);
 
-  // Submission & Loader states
+  // Submission & Stepper states
   const [submitting, setSubmitting] = useState(false);
   const [loaderStep, setLoaderStep] = useState(1);
   const [result, setResult] = useState<any | null>(null);
@@ -64,7 +68,6 @@ export default function ReportPage() {
     };
     window.addEventListener("locale-change", handler);
 
-    // Auto-detect GPS coordinates
     detectGPS();
 
     return () => {
@@ -76,7 +79,7 @@ export default function ReportPage() {
   const detectGPS = () => {
     if (!navigator.geolocation) {
       setCoords({ lat: 12.9716, lng: 77.5946 });
-      setLocationName("Bengaluru, Karnataka (Default)");
+      setLocationName("Bengaluru Metro Central (Default GPS)");
       return;
     }
 
@@ -85,21 +88,19 @@ export default function ReportPage() {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         setCoords({ lat, lng });
-        setLocationName(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
+        setLocationName(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)} (GPS Lock)`);
         setLocationError(false);
       },
       (err) => {
         console.warn("Geolocation denied or error:", err);
-        // Fallback to Bengaluru Indiranagar default
         setCoords({ lat: 12.9716, lng: 77.6385 });
-        setLocationName("Indiranagar, Bengaluru (Default GPS)");
+        setLocationName("Indiranagar Ward 112, Bengaluru (Default GPS)");
         setLocationError(true);
       },
       { timeout: 8000, enableHighAccuracy: true }
     );
   };
 
-  // Client-side image compression down to max 1280px JPEG
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -142,7 +143,6 @@ export default function ReportPage() {
     reader.readAsDataURL(file);
   };
 
-  // MediaRecorder Voice Note Handling
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -158,7 +158,6 @@ export default function ReportPage() {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
-        // Stop audio tracks
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -198,7 +197,6 @@ export default function ReportPage() {
     setRecordingSeconds(0);
   };
 
-  // Report Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -214,7 +212,7 @@ export default function ReportPage() {
     if (!coords) {
       toast({
         title: "Location Required",
-        description: "Waiting for GPS coordinates. Please tap on the map or retry.",
+        description: "Waiting for GPS coordinates. Please wait a moment.",
         type: "error",
       });
       return;
@@ -223,10 +221,9 @@ export default function ReportPage() {
     setSubmitting(true);
     setLoaderStep(1);
 
-    // Stepper progression animations
-    const stepTimer1 = setTimeout(() => setLoaderStep(2), 1600);
-    const stepTimer2 = setTimeout(() => setLoaderStep(3), 3200);
-    const stepTimer3 = setTimeout(() => setLoaderStep(4), 4800);
+    const stepTimer1 = setTimeout(() => setLoaderStep(2), 1200);
+    const stepTimer2 = setTimeout(() => setLoaderStep(3), 2400);
+    const stepTimer3 = setTimeout(() => setLoaderStep(4), 3600);
 
     try {
       const formData = new FormData();
@@ -252,9 +249,10 @@ export default function ReportPage() {
       }
 
       setResult(data);
+      triggerFire(); // Fire transition on successful submission!
       toast({
-        title: data.merged ? "Report Merged with Existing Issue" : "Grievance Ticket Created",
-        description: `Ticket ID: ${data.ticket}`,
+        title: data.merged ? "Report Merged (75m Deduplication)" : "Grievance Ticket Generated",
+        description: `Ticket ID: #${data.ticket}`,
         type: "success",
       });
     } catch (err: any) {
@@ -284,85 +282,95 @@ export default function ReportPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 sm:px-6">
       {/* Title */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+      <div className="text-center mb-8 space-y-2">
+        <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/30 text-xs font-bold gap-1 mb-1">
+          <Zap className="w-3.5 h-3.5" />
+          Autonomous Multimodal Intake
+        </Badge>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
           {t.reportCTA}
         </h1>
-        <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+        <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
           {t.reportSubtitle}
         </p>
       </div>
 
       {/* Step Loader Modal */}
       {submitting && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-in fade-in">
-          <Card className="w-full max-w-md p-6 text-center space-y-6 shadow-2xl">
-            <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 mx-auto flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in">
+          <div className="obsidian-card w-full max-w-md p-6 text-center space-y-6 shadow-2xl border-slate-700">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/30">
               <Sparkles className="w-8 h-8 animate-spin" />
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-slate-900">{t.submitting}</h3>
-              <p className="text-xs text-slate-500">Multimodal AI analysis in progress</p>
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-white">{t.submitting}</h3>
+              <p className="text-xs text-slate-400">Multimodal Neural Vision in progress</p>
             </div>
 
             <div className="space-y-3 text-left">
-              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 1 ? "text-blue-600 font-bold" : "text-slate-400"}`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 1 ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600"}`}>1</div>
+              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 1 ? "text-amber-400 font-bold" : "text-slate-500"}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 1 ? "bg-amber-500 text-slate-950 font-black" : "bg-slate-800 text-slate-400"}`}>1</div>
                 <span>{t.step1}</span>
               </div>
-              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 2 ? "text-blue-600 font-bold" : "text-slate-400"}`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 2 ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600"}`}>2</div>
+              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 2 ? "text-amber-400 font-bold" : "text-slate-500"}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 2 ? "bg-amber-500 text-slate-950 font-black" : "bg-slate-800 text-slate-400"}`}>2</div>
                 <span>{t.step2}</span>
               </div>
-              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 3 ? "text-blue-600 font-bold" : "text-slate-400"}`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 3 ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600"}`}>3</div>
+              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 3 ? "text-cyan-400 font-bold" : "text-slate-500"}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 3 ? "bg-cyan-500 text-slate-950 font-black" : "bg-slate-800 text-slate-400"}`}>3</div>
                 <span>{t.step3}</span>
               </div>
-              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 4 ? "text-blue-600 font-bold" : "text-slate-400"}`}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 4 ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600"}`}>4</div>
+              <div className={`flex items-center gap-3 text-xs font-semibold ${loaderStep >= 4 ? "text-emerald-400 font-bold" : "text-slate-500"}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${loaderStep >= 4 ? "bg-emerald-500 text-slate-950 font-black" : "bg-slate-800 text-slate-400"}`}>4</div>
                 <span>{t.step4}</span>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 
       {/* Result View */}
       {result ? (
-        <Card className="border-2 border-blue-500/50 shadow-xl overflow-hidden animate-in zoom-in-95">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-bold backdrop-blur-sm">
-              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-              {result.merged ? "Duplicate Grouped & Upvoted" : t.ticketCreated}
+        <div className="obsidian-card rounded-3xl border border-amber-500/40 shadow-2xl overflow-hidden animate-in zoom-in-95">
+          <div className="bg-gradient-to-r from-amber-600 to-orange-600 p-6 text-slate-950 text-center space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/20 text-xs font-black backdrop-blur-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-950" />
+              {result.merged ? "Duplicate Grouped (75m Clustering)" : t.ticketCreated}
             </div>
-            <h2 className="text-3xl font-black tracking-widest">{result.ticket}</h2>
+            <h2 className="text-3xl font-black tracking-widest font-mono">#{result.ticket}</h2>
             {result.merged && (
-              <p className="text-xs text-blue-100 font-medium">
+              <p className="text-xs text-amber-950 font-bold">
                 {t.mergedNotice.replace("{count}", (result.complaint.report_count - 1).toString())}
               </p>
             )}
           </div>
 
-          <CardContent className="p-6 space-y-6">
-            {/* Severity and Department Row */}
+          <div className="p-6 space-y-6">
+            {/* Severity and SLA Row */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{t.severity}</div>
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">{t.severity}</div>
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant={`sev${result.complaint.severity}` as any} className="text-xs px-2.5 py-1">
+                  <Badge className={`text-xs px-2.5 py-1 font-bold ${
+                    result.complaint.severity >= 4
+                      ? "bg-red-500/20 text-red-300 border-red-500/40"
+                      : result.complaint.severity === 3
+                      ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                      : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                  }`}>
                     Level {result.complaint.severity} / 5
                   </Badge>
-                  <span className="text-xs text-slate-600 font-medium capitalize">
-                    {result.complaint.severity >= 4 ? "Dangerous" : result.complaint.severity === 3 ? "Significant" : "Minor"}
+                  <span className="text-xs text-slate-300 font-semibold capitalize">
+                    {result.complaint.severity >= 4 ? "Critical Hazard" : result.complaint.severity === 3 ? "Priority" : "Routine"}
                   </span>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{t.dueBy}</div>
-                <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mt-1">
-                  <Clock className="w-4 h-4 text-blue-600 shrink-0" />
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">{t.dueBy}</div>
+                <div className="text-xs font-bold text-amber-400 flex items-center gap-1.5 mt-1 font-mono">
+                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>
                     {result.complaint.due_at
                       ? new Date(result.complaint.due_at).toLocaleTimeString("en-IN", {
@@ -378,63 +386,54 @@ export default function ReportPage() {
             </div>
 
             {/* Department info */}
-            <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200 flex items-center justify-between">
+            <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-semibold text-blue-700">{t.department}</div>
-                <div className="text-sm font-extrabold text-blue-950 capitalize mt-0.5">
+                <div className="text-[11px] font-bold text-slate-400 uppercase font-mono">{t.department}</div>
+                <div className="text-sm font-black text-white capitalize mt-0.5">
                   {result.complaint.department_id}
                 </div>
               </div>
-              <Badge variant="outline" className="text-[11px] border-blue-300 bg-white">
+              <Badge className="text-xs border-amber-500/30 bg-amber-500/10 text-amber-300 font-mono">
                 Category: {result.complaint.category}
               </Badge>
             </div>
 
             {/* Summary Block */}
             <div className="space-y-3">
-              <h4 className="text-base font-bold text-slate-900">{result.complaint.title}</h4>
-              <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <h4 className="text-base font-bold text-white">{result.complaint.title}</h4>
+              <p className="text-xs text-slate-300 leading-relaxed bg-slate-900 p-3.5 rounded-2xl border border-slate-800">
                 {result.complaint.summary_en}
               </p>
               {result.complaint.summary_local && (
-                <p className="text-xs text-blue-900 bg-blue-50/70 p-3 rounded-xl border border-blue-100 font-medium">
+                <p className="text-xs text-cyan-300 bg-cyan-950/40 p-3 rounded-2xl border border-cyan-800/40 font-medium">
                   {result.complaint.summary_local}
                 </p>
               )}
             </div>
 
-            {/* Hazard flags */}
-            {result.complaint.hazard_flags && result.complaint.hazard_flags.length > 0 && (
-              <div className="space-y-1.5">
-                <div className="text-xs font-bold text-slate-600">{t.hazardFlags}</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {result.complaint.hazard_flags.map((flag: string) => (
-                    <Badge key={flag} variant="warning" className="text-[11px]">
-                      {flag.replace("_", " ")}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Actions */}
-            <div className="space-y-2 pt-2 border-t border-slate-200">
-              <Link href={`/c/${result.ticket}`} className="w-full block">
-                <Button className="w-full h-12 text-sm gap-2">
-                  <Shield className="w-4 h-4" />
-                  <span>{t.trackTicket}</span>
-                  <ArrowRight className="w-4 h-4 ml-auto" />
-                </Button>
-              </Link>
+            <div className="space-y-3 pt-2 border-t border-slate-800">
+              <button
+                onClick={() => navigateWithFire(`/c/${result.ticket}`)}
+                className="flame-button w-full h-12 rounded-2xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95"
+              >
+                <Shield className="w-4 h-4" />
+                <span>Track Municipal Dispatch ({result.ticket})</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={copyShareLink} className="flex-1 h-11 text-xs gap-1.5">
-                  <Share2 className="w-4 h-4 text-slate-500" />
+                <Button
+                  variant="outline"
+                  onClick={copyShareLink}
+                  className="flex-1 h-11 text-xs gap-1.5 border-slate-700 bg-slate-900 text-slate-300 hover:text-white"
+                >
+                  <Share2 className="w-4 h-4 text-slate-400" />
                   <span>{t.shareTicket}</span>
                 </Button>
 
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   onClick={() => {
                     setResult(null);
                     setPhotoBlob(null);
@@ -443,27 +442,39 @@ export default function ReportPage() {
                     setAudioUrl(null);
                     setTextDescription("");
                   }}
-                  className="flex-1 h-11 text-xs"
+                  className="flex-1 h-11 text-xs border-slate-700 bg-slate-900 text-slate-300 hover:text-white"
                 >
                   {t.reportAnother}
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
         /* Form View */
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card className="p-4 sm:p-6 shadow-sm">
+          <div className="obsidian-card rounded-3xl p-5 sm:p-7 border-slate-800 space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-3 mb-6">
-                <TabsTrigger value="photo" icon={<Camera className="w-4 h-4" />}>
+              <TabsList className="grid grid-cols-3 mb-6 bg-slate-900 p-1 rounded-2xl border border-slate-800">
+                <TabsTrigger
+                  value="photo"
+                  icon={<Camera className="w-4 h-4" />}
+                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 font-bold rounded-xl"
+                >
                   {t.tabPhoto}
                 </TabsTrigger>
-                <TabsTrigger value="voice" icon={<Mic className="w-4 h-4" />}>
+                <TabsTrigger
+                  value="voice"
+                  icon={<Mic className="w-4 h-4" />}
+                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 font-bold rounded-xl"
+                >
                   {t.tabVoice}
                 </TabsTrigger>
-                <TabsTrigger value="text" icon={<FileText className="w-4 h-4" />}>
+                <TabsTrigger
+                  value="text"
+                  icon={<FileText className="w-4 h-4" />}
+                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-slate-950 font-bold rounded-xl"
+                >
                   {t.tabText}
                 </TabsTrigger>
               </TabsList>
@@ -472,7 +483,7 @@ export default function ReportPage() {
               <TabsContent value="photo">
                 <div className="space-y-4">
                   {photoPreview ? (
-                    <div className="relative rounded-2xl overflow-hidden border border-slate-200 aspect-video max-h-64 bg-slate-100 flex items-center justify-center">
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-700 aspect-video max-h-64 bg-slate-900 flex items-center justify-center">
                       <img src={photoPreview} alt="Damage Preview" className="w-full h-full object-cover" />
                       <button
                         type="button"
@@ -480,18 +491,18 @@ export default function ReportPage() {
                           setPhotoBlob(null);
                           setPhotoPreview(null);
                         }}
-                        className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/70 text-white text-xs font-semibold backdrop-blur-sm hover:bg-black"
+                        className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs font-semibold backdrop-blur-sm hover:bg-black"
                       >
                         Change Photo
                       </button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-2xl p-8 hover:bg-slate-50 cursor-pointer transition-colors text-center">
-                      <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                    <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-2xl p-8 hover:bg-slate-900/60 cursor-pointer transition-colors text-center">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3 border border-amber-500/30">
                         <Camera className="w-7 h-7" />
                       </div>
-                      <div className="text-sm font-bold text-slate-800">{t.photoPrompt}</div>
-                      <div className="text-xs text-slate-500 mt-1">Tap camera or upload existing photo</div>
+                      <div className="text-sm font-bold text-white">{t.photoPrompt}</div>
+                      <div className="text-xs text-slate-400 mt-1">Tap camera or upload existing photo</div>
                       <input
                         type="file"
                         accept="image/*"
@@ -507,7 +518,7 @@ export default function ReportPage() {
               {/* Voice Tab */}
               <TabsContent value="voice">
                 <div className="space-y-4 text-center py-4">
-                  <div className="text-xs text-slate-500 max-w-sm mx-auto">
+                  <div className="text-xs text-slate-400 max-w-sm mx-auto">
                     {t.voicePrompt}
                   </div>
 
@@ -525,25 +536,25 @@ export default function ReportPage() {
                       <button
                         type="button"
                         onClick={startRecording}
-                        className="w-20 h-20 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
+                        className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/25 transition-all cursor-pointer hover:scale-105"
                         aria-label="Start recording"
                       >
                         <Mic className="w-8 h-8" />
                       </button>
                     )}
 
-                    <div className="text-base font-black text-slate-800">
-                      {isRecording ? `Recording: ${recordingSeconds}s / 60s` : audioBlob ? "Recording Saved" : "Tap to Record"}
+                    <div className="text-sm font-bold text-white font-mono">
+                      {isRecording ? `Recording: ${recordingSeconds}s / 60s` : audioBlob ? "Recording Saved" : "Tap to Speak (Any Language)"}
                     </div>
                   </div>
 
                   {audioUrl && (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3 max-w-sm mx-auto">
+                    <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between gap-3 max-w-sm mx-auto">
                       <audio src={audioUrl} controls className="h-8 flex-1" />
                       <button
                         type="button"
                         onClick={resetRecording}
-                        className="p-1.5 text-slate-500 hover:text-red-600 rounded-lg hover:bg-slate-200"
+                        className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800"
                         title="Delete recording"
                       >
                         <RotateCcw className="w-4 h-4" />
@@ -556,29 +567,29 @@ export default function ReportPage() {
               {/* Text Tab */}
               <TabsContent value="text">
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-700">
-                    Describe the Problem
+                  <label className="text-xs font-bold text-slate-300">
+                    Describe the Hazard
                   </label>
                   <textarea
                     rows={4}
                     value={textDescription}
                     onChange={(e) => setTextDescription(e.target.value)}
                     placeholder={t.textPrompt}
-                    className="w-full rounded-xl border border-slate-300 p-3.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-900 p-3.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </TabsContent>
             </Tabs>
 
             {/* GPS Location Bar */}
-            <div className="mt-6 p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+            <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <MapPin className={`w-5 h-5 shrink-0 ${locationError ? "text-amber-500" : "text-emerald-600"}`} />
+                <MapPin className={`w-5 h-5 shrink-0 ${locationError ? "text-amber-400" : "text-emerald-400"}`} />
                 <div className="min-w-0">
-                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    {locationError ? "Manual Coordinates" : t.locationDetected}
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+                    {locationError ? "Estimated Location" : t.locationDetected}
                   </div>
-                  <div className="text-xs font-medium text-slate-800 truncate">
+                  <div className="text-xs font-semibold text-slate-200 truncate">
                     {locationName}
                   </div>
                 </div>
@@ -589,42 +600,43 @@ export default function ReportPage() {
                 variant="outline"
                 size="sm"
                 onClick={detectGPS}
-                className="text-xs h-8 px-2.5 shrink-0"
+                className="text-[11px] h-8 px-2.5 shrink-0 border-slate-700 bg-slate-800 text-slate-300 hover:text-white"
               >
                 Refresh GPS
               </Button>
             </div>
 
             {/* Multi-input confirmation indicators */}
-            <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium text-slate-500">
+            <div className="flex flex-wrap gap-2 text-xs font-medium">
               {photoBlob && (
-                <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200">
+                <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-500/30 text-[11px]">
                   ✓ Photo Attached
                 </span>
               )}
               {audioBlob && (
-                <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200">
+                <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-500/30 text-[11px]">
                   ✓ Voice Note ({recordingSeconds}s)
                 </span>
               )}
               {textDescription.trim() && (
-                <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md border border-indigo-200">
+                <span className="inline-flex items-center gap-1 bg-cyan-500/10 text-cyan-300 px-2.5 py-1 rounded-lg border border-cyan-500/30 text-[11px]">
                   ✓ Text Note Added
                 </span>
               )}
             </div>
 
             {/* Submit Button */}
-            <div className="mt-6 pt-4 border-t border-slate-100">
-              <Button
+            <div className="pt-2 border-t border-slate-800">
+              <button
                 type="submit"
                 disabled={submitting || (!photoBlob && !audioBlob && !textDescription.trim())}
-                className="w-full h-12 text-base font-bold shadow-md shadow-blue-600/20"
+                className="flame-button w-full h-12 rounded-2xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 disabled:opacity-50"
               >
-                {t.reportCTA}
-              </Button>
+                <Flame className="w-4 h-4" />
+                <span>{t.reportCTA}</span>
+              </button>
             </div>
-          </Card>
+          </div>
         </form>
       )}
     </div>

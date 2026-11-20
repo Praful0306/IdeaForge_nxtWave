@@ -26,11 +26,16 @@ import {
   ExternalLink,
   Shield,
   Layers,
+  MapPin,
+  Flame,
+  ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useFire } from "@/components/FireTransition";
 import { ComplaintRecord } from "@/lib/db";
 import { translations, Locale } from "@/lib/i18n";
 
@@ -38,13 +43,14 @@ import { translations, Locale } from "@/lib/i18n";
 const CivicMap = dynamic(() => import("@/components/Map"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[450px] rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
-      Loading City Map...
+    <div className="w-full h-[520px] rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 font-mono text-xs">
+      Loading Dark Telemetry Map...
     </div>
   ),
 });
 
 export default function DashboardPage() {
+  const { navigateWithFire } = useFire();
   const [locale, setLocale] = useState<Locale>("en");
   const [complaints, setComplaints] = useState<ComplaintRecord[]>([]);
   const [metrics, setMetrics] = useState<any>({});
@@ -108,7 +114,7 @@ export default function DashboardPage() {
     return (
       c.ticket.toLowerCase().includes(q) ||
       c.title.toLowerCase().includes(q) ||
-      c.address?.toLowerCase().includes(q)
+      (c.address && c.address.toLowerCase().includes(q))
     );
   });
 
@@ -130,7 +136,6 @@ export default function DashboardPage() {
     }
   });
 
-  // Prepare 14-day trend mockup data
   const trendData = [
     { day: "Day 1", newReports: 4, fixed: 1 },
     { day: "Day 3", newReports: 7, fixed: 3 },
@@ -146,104 +151,120 @@ export default function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="obsidian-card rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-widest">
+              Live Municipal Telemetry
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
             {t.cityMap}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Real-time geospatial monitoring, severity triage, and statutory SLA performance.
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Geospatial hazard mapping, 75m spatial clusters, and statutory SLA performance.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/report">
-            <Button className="h-11 font-bold shadow-md shadow-blue-600/20">
-              Report Problem
-            </Button>
-          </Link>
-          <Link href="/officer">
-            <Button variant="outline" className="h-11 font-semibold">
-              Officer View
-            </Button>
-          </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => navigateWithFire("/report")}
+            className="flame-button px-5 py-3 rounded-2xl text-xs font-black flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
+          >
+            <Flame className="w-4 h-4" />
+            <span>Report Hazard</span>
+          </button>
+
+          <button
+            onClick={() => navigateWithFire("/admin/dashboard")}
+            className="px-4 py-3 rounded-2xl border border-slate-700 bg-slate-900 text-xs font-bold text-slate-200 hover:text-white hover:border-slate-500 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Shield className="w-3.5 h-3.5 text-amber-400" />
+            <span>Admin Console</span>
+          </button>
         </div>
       </div>
 
       {/* Top KPI Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Card className="p-4 border-l-4 border-l-blue-600">
-          <div className="text-[11px] font-bold text-slate-500 uppercase">{t.kpiTotal}</div>
-          <div className="text-2xl font-black text-slate-900 mt-1">{metrics.total || 0}</div>
-        </Card>
+        <div className="obsidian-card p-4 rounded-2xl border-l-4 border-l-cyan-500">
+          <div className="text-[11px] font-bold text-slate-400 uppercase font-mono">{t.kpiTotal}</div>
+          <div className="text-2xl font-black text-white mt-1">{metrics.total || 0}</div>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-amber-500">
-          <div className="text-[11px] font-bold text-amber-600 uppercase">{t.kpiOpen}</div>
-          <div className="text-2xl font-black text-amber-600 mt-1">{metrics.open || 0}</div>
-        </Card>
+        <div className="obsidian-card p-4 rounded-2xl border-l-4 border-l-amber-500">
+          <div className="text-[11px] font-bold text-amber-400 uppercase font-mono">{t.kpiOpen}</div>
+          <div className="text-2xl font-black text-amber-400 mt-1">{metrics.open || 0}</div>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-emerald-600">
-          <div className="text-[11px] font-bold text-emerald-600 uppercase">{t.kpiResolved}</div>
-          <div className="text-2xl font-black text-emerald-600 mt-1">{metrics.resolved || 0}</div>
-        </Card>
+        <div className="obsidian-card p-4 rounded-2xl border-l-4 border-l-emerald-500">
+          <div className="text-[11px] font-bold text-emerald-400 uppercase font-mono">{t.kpiResolved}</div>
+          <div className="text-2xl font-black text-emerald-400 mt-1">{metrics.resolved || 0}</div>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-indigo-600">
-          <div className="text-[11px] font-bold text-indigo-600 uppercase">{t.kpiResolvedPercent}</div>
-          <div className="text-2xl font-black text-indigo-600 mt-1">{metrics.resolvedPercent || 0}%</div>
-        </Card>
+        <div className="obsidian-card p-4 rounded-2xl border-l-4 border-l-blue-500">
+          <div className="text-[11px] font-bold text-blue-400 uppercase font-mono">{t.kpiResolvedPercent}</div>
+          <div className="text-2xl font-black text-blue-400 mt-1">{metrics.resolvedPercent || 0}%</div>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-red-600">
-          <div className="text-[11px] font-bold text-red-600 uppercase">{t.kpiOverdue}</div>
-          <div className="text-2xl font-black text-red-600 mt-1">{metrics.overdue || 0}</div>
-        </Card>
+        <div className="obsidian-card p-4 rounded-2xl border-l-4 border-l-red-500">
+          <div className="text-[11px] font-bold text-red-400 uppercase font-mono">{t.kpiOverdue}</div>
+          <div className="text-2xl font-black text-red-400 mt-1">{metrics.overdue || 0}</div>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-slate-600">
-          <div className="text-[11px] font-bold text-slate-500 uppercase">{t.kpiAvgTime}</div>
-          <div className="text-2xl font-black text-slate-900 mt-1">{metrics.avgResolutionHours || 0}h</div>
-        </Card>
+        <div className="obsidian-card p-4 rounded-2xl border-l-4 border-l-slate-600">
+          <div className="text-[11px] font-bold text-slate-400 uppercase font-mono">{t.kpiAvgTime}</div>
+          <div className="text-2xl font-black text-white mt-1">{metrics.avgResolutionHours || 0}h</div>
+        </div>
       </div>
 
-      {/* AI Ward Insights (Cached 10 min) */}
-      <Card className="border-blue-200 bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/80 overflow-hidden shadow-sm">
-        <CardContent className="p-5 flex items-start gap-4">
-          <div className="p-2.5 rounded-xl bg-blue-600 text-white shrink-0 shadow-sm mt-0.5">
+      {/* AI Ward Insights */}
+      <div className="obsidian-card rounded-2xl p-5 border-slate-800">
+        <div className="flex items-start gap-4">
+          <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 shrink-0 border border-amber-500/30">
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
-          <div className="flex-1 space-y-1.5">
+          <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-blue-900">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-300 font-mono">
                 {t.aiInsights}
               </span>
-              <span className="text-[10px] text-slate-400 bg-white/80 border border-slate-200 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-full font-mono">
                 Cached 10m
               </span>
             </div>
-            <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+            <ul className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {insights.map((insight, idx) => (
-                <li key={idx} className="text-xs font-semibold text-slate-700 bg-white/70 p-2.5 rounded-xl border border-blue-100/80">
+                <li key={idx} className="text-xs font-medium text-slate-300 bg-slate-900/90 p-3 rounded-xl border border-slate-800 leading-relaxed">
                   {insight}
                 </li>
               ))}
             </ul>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Filter Toolbar */}
-      <Card className="p-4">
+      <div className="obsidian-card rounded-2xl p-4 border-slate-800">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
             <input
               type="text"
               placeholder="Search ticket, title, ward..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 pl-9 pr-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+              className="w-full h-11 pl-9 pr-3 text-xs rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
             />
           </div>
 
-          <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            aria-label="Filter by category"
+            className="h-11 bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 focus:outline-none focus:border-amber-500"
+          >
             <option value="all">All Categories</option>
             <option value="roads">Roads</option>
             <option value="water">Water Supply</option>
@@ -251,40 +272,54 @@ export default function DashboardPage() {
             <option value="sanitation">Sanitation</option>
             <option value="electrical">Electrical</option>
             <option value="pollution">Pollution</option>
-          </Select>
+          </select>
 
-          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Filter by status"
+            className="h-11 bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 focus:outline-none focus:border-amber-500"
+          >
             <option value="all">All Statuses</option>
             <option value="open">Open</option>
             <option value="in_progress">In Progress</option>
-            <option value="acknowledged">Acknowledged</option>
             <option value="resolved">Resolved</option>
-          </Select>
+          </select>
 
-          <Select value={severityFilter} onChange={(e) => setSeverityFilter(e.target.value)}>
+          <select
+            value={severityFilter}
+            onChange={(e) => setSeverityFilter(e.target.value)}
+            aria-label="Filter by severity"
+            className="h-11 bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 focus:outline-none focus:border-amber-500"
+          >
             <option value="all">All Severities</option>
             <option value="5">Level 5 (Emergency)</option>
             <option value="4">Level 4 (Dangerous)</option>
-            <option value="3">Level 3 (Nuisance)</option>
+            <option value="3">Level 3 (Priority)</option>
             <option value="2">Level 2 (Minor)</option>
             <option value="1">Level 1 (Cosmetic)</option>
-          </Select>
+          </select>
 
-          <Select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}>
+          <select
+            value={departmentFilter}
+            onChange={(e) => setDepartmentFilter(e.target.value)}
+            aria-label="Filter by department"
+            className="h-11 bg-slate-900 border border-slate-800 text-xs text-slate-300 rounded-xl px-3 focus:outline-none focus:border-amber-500"
+          >
             <option value="all">All Departments</option>
-            <option value="roads">Roads (PWD/ULB)</option>
-            <option value="water">Water Supply (BWSSB)</option>
-            <option value="drainage">Storm Water Drains</option>
-            <option value="sanitation">Solid Waste (SWM)</option>
+            <option value="roads">Roads (BBMP/PWD)</option>
+            <option value="water">Water (BWSSB)</option>
+            <option value="drainage">Stormwater Drains</option>
+            <option value="sanitation">Solid Waste Cell</option>
             <option value="electrical">BESCOM Electrical</option>
-          </Select>
+          </select>
         </div>
-      </Card>
+      </div>
 
       {/* Main Map & Priority Queue Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Map Column */}
-        <div className="lg:col-span-7 h-[520px]">
+        <div className="lg:col-span-7 h-[520px] rounded-3xl overflow-hidden border border-slate-800 shadow-xl">
           <CivicMap
             complaints={filteredComplaints}
             selectedComplaintId={selectedComplaintId}
@@ -294,19 +329,19 @@ export default function DashboardPage() {
 
         {/* Priority Queue (Worst First) */}
         <div className="lg:col-span-5 h-[520px] flex flex-col">
-          <Card className="flex-1 flex flex-col overflow-hidden">
-            <CardHeader className="p-4 border-b border-slate-100 flex flex-row items-center justify-between">
+          <div className="obsidian-card rounded-3xl flex-1 flex flex-col overflow-hidden border-slate-800">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <ArrowUpDown className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <ArrowUpDown className="w-4 h-4 text-amber-400" />
                   {t.worstFirst}
-                </CardTitle>
-                <div className="text-xs text-slate-500">Sorted by dynamic priority score</div>
+                </h3>
+                <div className="text-[11px] text-slate-400">Sorted by dynamic priority score</div>
               </div>
-              <Badge variant="outline" className="text-xs">
+              <Badge className="bg-slate-900 text-slate-300 border-slate-800 text-xs font-mono">
                 {filteredComplaints.length} Records
               </Badge>
-            </CardHeader>
+            </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
               {filteredComplaints.map((c) => {
@@ -316,43 +351,51 @@ export default function DashboardPage() {
                   <div
                     key={c.id}
                     onClick={() => setSelectedComplaintId(c.id)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                       selectedComplaintId === c.id
-                        ? "border-blue-600 bg-blue-50/50 shadow-sm"
-                        : "border-slate-200/80 bg-white hover:border-slate-300"
+                        ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/10"
+                        : "border-slate-800/80 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-xs text-blue-700">{c.ticket}</span>
+                        <span className="font-mono font-bold text-xs text-amber-400">#{c.ticket}</span>
                         {isOverdue && (
-                          <Badge variant="destructive" className="text-[10px] py-0 px-1.5">
+                          <Badge className="text-[10px] py-0 px-1.5 bg-red-600 text-white font-bold">
                             Overdue
                           </Badge>
                         )}
                         {c.report_count > 1 && (
-                          <Badge variant="secondary" className="text-[10px] py-0 px-1.5 bg-slate-100">
+                          <Badge className="text-[10px] py-0 px-1.5 bg-cyan-500/10 text-cyan-300 border-cyan-500/30">
                             +{c.report_count - 1} Upvotes
                           </Badge>
                         )}
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-slate-500">P-Score: {c.priority}</span>
-                        <Badge variant={`sev${c.severity}` as any} className="text-[10px] py-0 px-1.5">
+                        <span className="text-[11px] font-mono text-slate-400">P-Score: {c.priority}</span>
+                        <Badge
+                          className={`text-[10px] py-0 px-1.5 font-bold ${
+                            c.severity >= 4
+                              ? "bg-red-500/20 text-red-300 border-red-500/30"
+                              : c.severity === 3
+                              ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                              : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                          }`}
+                        >
                           Sev {c.severity}
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="text-xs font-bold text-slate-900 line-clamp-1">{c.title}</div>
-                    <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{c.address}</div>
+                    <div className="text-xs font-bold text-white line-clamp-1">{c.title}</div>
+                    <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{c.address}</div>
 
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 text-[11px]">
-                      <span className="text-slate-500 capitalize">{c.category}</span>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800 text-[11px]">
+                      <span className="text-slate-400 capitalize">{c.category}</span>
                       <Link
                         href={`/c/${c.ticket}`}
-                        className="text-blue-600 font-semibold hover:underline flex items-center gap-0.5"
+                        className="text-amber-400 font-bold hover:underline flex items-center gap-0.5"
                       >
                         Details <ExternalLink className="w-3 h-3" />
                       </Link>
@@ -361,49 +404,53 @@ export default function DashboardPage() {
                 );
               })}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
 
       {/* Analytics Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <CardTitle className="text-base font-bold mb-4">
-            Department Performance (Open vs Resolved)
-          </CardTitle>
+        <div className="obsidian-card rounded-3xl p-6 border-slate-800">
+          <h3 className="text-sm font-bold text-white mb-4">
+            Department Performance (Active vs Resolved)
+          </h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={departmentChartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.5} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} stroke="#334155" />
+                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} stroke="#334155" />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "12px", color: "#fff" }}
+                />
                 <Legend />
                 <Bar dataKey="open" fill="#f59e0b" name="Active / Open" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="resolved" fill="#16a34a" name="Resolved" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="resolved" fill="#10b981" name="Verified Resolved" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-6">
-          <CardTitle className="text-base font-bold mb-4">
-            14-Day Grievance Trend (Incoming vs Fixed)
-          </CardTitle>
+        <div className="obsidian-card rounded-3xl p-6 border-slate-800">
+          <h3 className="text-sm font-bold text-white mb-4">
+            14-Day Grievance Trend (Incoming vs Mitigated)
+          </h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.5} />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#94a3b8" }} stroke="#334155" />
+                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} stroke="#334155" />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "12px", color: "#fff" }}
+                />
                 <Legend />
-                <Line type="monotone" dataKey="newReports" stroke="#2563eb" strokeWidth={2.5} name="New Complaints" />
-                <Line type="monotone" dataKey="fixed" stroke="#16a34a" strokeWidth={2.5} name="Verified Fixes" />
+                <Line type="monotone" dataKey="newReports" stroke="#06b6d4" strokeWidth={2.5} name="New Complaints" />
+                <Line type="monotone" dataKey="fixed" stroke="#10b981" strokeWidth={2.5} name="Verified Fixes" />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
