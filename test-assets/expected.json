@@ -1,0 +1,79 @@
+[
+  {
+    "id": "pothole_main_road",
+    "description": "Deep pothole on fast road at night",
+    "expected_category": "roads",
+    "expected_severity_band": [4, 5],
+    "is_valid": true
+  },
+  {
+    "id": "small_crack",
+    "description": "Small hairline surface crack on footpath",
+    "expected_category": "roads",
+    "expected_severity_band": [1, 2],
+    "is_valid": true
+  },
+  {
+    "id": "open_manhole",
+    "description": "Open uncovered manhole next to primary school",
+    "expected_category": "drainage",
+    "expected_severity_band": [5, 5],
+    "is_valid": true
+  },
+  {
+    "id": "garbage_near_school",
+    "description": "Black plastic garbage dump next to school gate",
+    "expected_category": "sanitation",
+    "expected_severity_band": [4, 4],
+    "is_valid": true
+  },
+  {
+    "id": "pipe_burst",
+    "description": "Drinking water main pipe burst flooding lane",
+    "expected_category": "water",
+    "expected_severity_band": [4, 5],
+    "is_valid": true
+  },
+  {
+    "id": "sewage_overflow",
+    "description": "Sewage overflowing on residential road",
+    "expected_category": "drainage",
+    "expected_severity_band": [3, 4],
+    "is_valid": true
+  },
+  {
+    "id": "fallen_wire",
+    "description": "Live fallen wire sparking on wet pavement",
+    "expected_category": "electrical",
+    "expected_severity_band": [5, 5],
+    "is_valid": true
+  },
+  {
+    "id": "streetlight_off",
+    "description": "Streetlight off in bylane",
+    "expected_category": "electrical",
+    "expected_severity_band": [2, 3],
+    "is_valid": true
+  },
+  {
+    "id": "burning_garbage",
+    "description": "Burning plastic garbage emitting toxic smoke",
+    "expected_category": "pollution",
+    "expected_severity_band": [3, 4],
+    "is_valid": true
+  },
+  {
+    "id": "selfie_invalid",
+    "description": "Selfie of a person smiling with no civic issue",
+    "expected_category": "other",
+    "expected_severity_band": [1, 1],
+    "is_valid": false
+  },
+  {
+    "id": "meme_invalid",
+    "description": "Internet meme graphic unrelated to civic infrastructure",
+    "expected_category": "other",
+    "expected_severity_band": [1, 1],
+    "is_valid": false
+  }
+]
