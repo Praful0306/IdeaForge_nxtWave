@@ -456,11 +456,18 @@ export default function HomePage() {
                     <span>NEURAL VISION AUDIT</span>
                     <span className="text-emerald-400 font-bold">● ACTIVE</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                    <div className="text-xs font-bold text-white">Defect: Crater Pothole (Depth 18cm)</div>
-                    <div className="text-[11px] text-amber-400 font-mono">Traffic Risk: High (Two-Wheelers Vulnerable)</div>
-                    <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                      <div className="bg-gradient-to-r from-amber-500 to-red-500 h-full w-[88%]" />
+                  <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-slate-900 border border-slate-800">
+                    <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
+                      <svg className="w-16 h-16 -rotate-90">
+                        <circle cx="32" cy="32" r="26" stroke="#1e293b" strokeWidth="5" fill="none" />
+                        <circle cx="32" cy="32" r="26" stroke="#10b981" strokeWidth="5" fill="none" strokeDasharray="163" strokeDashoffset="4" strokeLinecap="round" />
+                      </svg>
+                      <span className="absolute font-mono text-xs font-black text-white">98%</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-white">Defect: Crater Pothole (Depth 18cm)</div>
+                      <div className="text-[11px] text-amber-400 font-mono">Vision Precision: 98.4% Confidence</div>
+                      <div className="text-[10px] text-slate-400">Traffic Risk: High (Two-Wheelers Vulnerable)</div>
                     </div>
                   </div>
                   <div className="text-[11px] text-slate-400 font-mono">
@@ -470,13 +477,20 @@ export default function HomePage() {
               )}
 
               {activeShowcase.demoType === "clustering" && (
-                <div className="relative h-full flex flex-col items-center justify-center">
-                  <div className="absolute w-48 h-48 rounded-full border border-cyan-500/20 animate-pulse" />
-                  <div className="absolute w-32 h-32 rounded-full border border-cyan-500/35" />
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30 z-10">
+                <div className="relative h-full flex flex-col items-center justify-center overflow-hidden">
+                  {/* Conical sweeping radar beam */}
+                  <div className="absolute w-52 h-52 rounded-full border border-cyan-500/20" />
+                  <div className="absolute w-36 h-36 rounded-full border border-cyan-500/35" />
+                  <div className="absolute w-52 h-52 rounded-full border-t-2 border-r-2 border-cyan-400/60 animate-radar-sweep pointer-events-none" />
+
+                  {/* Orbiting Satellite Citations */}
+                  <div className="absolute w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4] animate-orbit-1" />
+                  <div className="absolute w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-orbit-2" />
+
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30 z-10 morphism-clay">
                     <AlertTriangle className="w-6 h-6" />
                   </div>
-                  <div className="text-[10px] font-mono text-amber-400 bg-slate-900 px-2 py-0.5 rounded border border-amber-500/30 mt-2 z-10">
+                  <div className="text-[10px] font-mono text-amber-400 bg-slate-900/90 px-2.5 py-1 rounded-full border border-amber-500/30 mt-3 z-10 backdrop-blur-md">
                     1 Master Ticket (+24 Upvotes)
                   </div>
                 </div>
@@ -719,6 +733,24 @@ export default function HomePage() {
                 {activeScenario.description}
               </div>
 
+              {/* Lightning Animation for High-Voltage Electrical Arc */}
+              {activeScenario.id === "electrical" && (
+                <div className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/50 flex items-center gap-3 relative overflow-hidden shadow-lg shadow-cyan-500/10">
+                  <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 lightning-arc shrink-0 border border-cyan-500/40">
+                    <Zap className="w-5 h-5 fill-cyan-400 text-cyan-200" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-black text-cyan-300 flex items-center gap-1.5">
+                      <span>11kV LIVE ELECTRICAL ARC DETECTED</span>
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                    </div>
+                    <div className="text-[11px] text-slate-300">
+                      Active arcing to pedestrian curb. Ingress geofence 50m activated.
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-800/40 flex items-center gap-2 text-xs text-cyan-300">
                 <Layers className="w-4 h-4 text-cyan-400 shrink-0" />
                 <span>{activeScenario.duplicates}</span>
@@ -765,6 +797,93 @@ export default function HomePage() {
             </div>
           </div>
         </motion.div>
+      </section>
+
+      {/* 5B. TACTILE MULTI-MORPHISM STUDIO */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center space-y-3 mb-12">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-amber-400 uppercase tracking-widest">
+            <Sliders className="w-4 h-4" />
+            <span>Tactile Morphism Architecture</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black text-white">
+            Beyond Flat UI: Three Organic Morphisms
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
+            Zero generic AI purple gradients. Experience true tactile depth crafted with precision lighting and physical physics.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* 1. Glassmorphism Card */}
+          <div className="morphism-glass rounded-3xl p-6 sm:p-8 space-y-4 relative overflow-hidden group">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-black text-cyan-400 uppercase tracking-widest">
+                Morphism 01
+              </span>
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            </div>
+
+            <h3 className="text-xl font-black text-white group-hover:text-cyan-300 transition-colors">
+              Obsidian Glassmorphism
+            </h3>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Frosted deep obsidian substrate with 28px sub-surface blur, 170% saturation, and specular micro-reflections along the top rim.
+            </p>
+
+            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-cyan-400">
+              <span>Backdrop: 28px Blur</span>
+              <span>Light Specular: 1px Rim</span>
+            </div>
+          </div>
+
+          {/* 2. Claymorphism Card */}
+          <div className="morphism-clay rounded-3xl p-6 sm:p-8 space-y-4 relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-black text-amber-400 uppercase tracking-widest">
+                Morphism 02 (Interactive)
+              </span>
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            </div>
+
+            <h3 className="text-xl font-black text-white group-hover:text-amber-300 transition-colors">
+              Tactile Claymorphism
+            </h3>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Volumetric sculpted 3D depth with dual inner bevels (top highlight + dark bottom inset) that physically depresses upon user touch.
+            </p>
+
+            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-amber-400">
+              <span>3D Inner Bevels</span>
+              <span>Tap to Feel Depth</span>
+            </div>
+          </div>
+
+          {/* 3. Molten Metal Card */}
+          <div className="morphism-molten rounded-3xl p-6 sm:p-8 space-y-4 relative overflow-hidden group">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono font-black text-orange-400 uppercase tracking-widest">
+                Morphism 03
+              </span>
+              <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+            </div>
+
+            <h3 className="text-xl font-black text-white group-hover:text-orange-300 transition-colors">
+              Liquid Molten Metal
+            </h3>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Radiant thermal depth with molten gold/amber rim reflections, liquid surface gradients, and deep fire-ember drop shadows.
+            </p>
+
+            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-orange-400">
+              <span>Thermal Amber Rim</span>
+              <span>Molten Ember Depth</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* 6. BENGALURU WARD SLA COMPLIANCE SCOREBOARD */}

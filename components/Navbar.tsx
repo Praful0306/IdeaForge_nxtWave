@@ -74,14 +74,25 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#080C16]/90 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Brand */}
+        {/* Brand with Bespoke Animated Ocular Reticle Logo */}
         <a
           href="/"
           onClick={(e) => handleNavClick(e, "/")}
-          className="flex items-center gap-2.5 group cursor-pointer"
+          className="flex items-center gap-3 group cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-600 flex items-center justify-center text-white shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-all">
-            <Eye className="w-5 h-5 text-black" />
+          <div className="relative w-11 h-11 rounded-2xl morphism-clay flex items-center justify-center border border-amber-500/30 group-hover:border-amber-400 transition-all overflow-hidden shadow-lg shadow-amber-500/10">
+            {/* Outer rotating optical reticle ring */}
+            <svg className="absolute inset-0 w-full h-full p-1 animate-spin" style={{ animationDuration: "16s" }} viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="17" fill="none" stroke="rgba(245, 158, 11, 0.4)" strokeWidth="1" strokeDasharray="4 3" />
+            </svg>
+            {/* Inner electric iris with pupil */}
+            <div className="relative z-10 w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-300 flex items-center justify-center shadow-md shadow-amber-500/40">
+              <div className="w-2.5 h-2.5 rounded-full bg-slate-950 flex items-center justify-center">
+                <span className="w-1 h-1 rounded-full bg-cyan-400 animate-ping" />
+              </div>
+            </div>
+            {/* Subtle lightning spark sweep */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-cyan-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
