@@ -401,19 +401,57 @@ export async function updateComplaint(
 }
 
 /**
+ * Parses PostGIS hex EWKB point geometry to extract lat and lng.
+ */
+function parseEWKBPoint(ewkbHex: string): { lat: number; lng: number } {
+  try {
+    const cleanHex = ewkbHex.replace(/^0x/, "");
+    const buf = Buffer.from(cleanHex, "hex");
+    if (buf.length >= 25) {
+      // 1 byte byteOrder, 4 bytes geomType, 4 bytes SRID = 9 bytes offset for X (lng)
+      const lng = buf.readDoubleLE(9);
+      const lat = buf.readDoubleLE(17);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return { lat: Math.round(lat * 1e6) / 1e6, lng: Math.round(lng * 1e6) / 1e6 };
+      }
+    }
+  } catch {}
+  return { lat: 12.9716, lng: 77.5946 };
+}
+
+/**
+ * Normalizes a raw Supabase complaint record with lat/lng coordinates.
+ */
+function normalizeComplaint(c: any): ComplaintRecord {
+  let lat = c.lat;
+  let lng = c.lng;
+  if ((lat === undefined || lng === undefined) && typeof c.location === "string") {
+    const coords = parseEWKBPoint(c.location);
+    lat = coords.lat;
+    lng = coords.lng;
+  }
+  return {
+    ...c,
+    lat: lat ?? 12.9716,
+    lng: lng ?? 77.5946,
+  } as ComplaintRecord;
+}
+
+/**
  * Finds a complaint by Ticket ID (e.g., 'NN-9A2K').
  */
 export async function getComplaintByTicket(ticket: string): Promise<ComplaintRecord | null> {
   if (hasSupabaseConfig()) {
     try {
-      const { data, error } = await supabase
+      const serverSupabase = getServiceSupabase();
+      const { data, error } = await serverSupabase
         .from("complaints")
         .select("*")
         .ilike("ticket", ticket)
         .single();
 
       if (!error && data) {
-        return data as ComplaintRecord;
+        return normalizeComplaint(data);
       }
     } catch {
       // fallback
@@ -432,6 +470,22 @@ export async function getComplaintByTicket(ticket: string): Promise<ComplaintRec
  * Finds a complaint by ID.
  */
 export async function getComplaintById(id: string): Promise<ComplaintRecord | null> {
+  if (hasSupabaseConfig()) {
+    try {
+      const serverSupabase = getServiceSupabase();
+      const { data, error } = await serverSupabase
+        .from("complaints")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (!error && data) {
+        return normalizeComplaint(data);
+      }
+    } catch {
+      // fallback
+    }
+  }
   return inMemoryComplaints.get(id) || null;
 }
 
@@ -445,6 +499,39 @@ export async function listComplaints(filters?: {
   departmentId?: string;
   sortBy?: "priority" | "created_at";
 }): Promise<ComplaintRecord[]> {
+  if (hasSupabaseConfig()) {
+    try {
+      const serverSupabase = getServiceSupabase();
+      let query = serverSupabase.from("complaints").select("*");
+
+      if (filters?.category && filters.category !== "all") {
+        query = query.eq("category", filters.category.toLowerCase());
+      }
+      if (filters?.status && filters.status !== "all") {
+        query = query.eq("status", filters.status);
+      }
+      if (filters?.severity && filters.severity > 0) {
+        query = query.eq("severity", filters.severity);
+      }
+      if (filters?.departmentId && filters.departmentId !== "all") {
+        query = query.eq("department_id", filters.departmentId);
+      }
+
+      if (filters?.sortBy === "created_at") {
+        query = query.order("created_at", { ascending: false });
+      } else {
+        query = query.order("priority", { ascending: false });
+      }
+
+      const { data, error } = await query;
+      if (!error && data && data.length > 0) {
+        return data.map(normalizeComplaint);
+      }
+    } catch {
+      // fallback to memory
+    }
+  }
+
   let list = Array.from(inMemoryComplaints.values());
 
   if (filters?.category && filters.category !== "all") {
@@ -482,6 +569,19 @@ export async function addStatusEvent(
     created_at: new Date().toISOString(),
   };
 
+  if (hasSupabaseConfig()) {
+    try {
+      const serverSupabase = getServiceSupabase();
+      await serverSupabase.from("status_events").insert({
+        complaint_id: record.complaint_id,
+        status: record.status,
+        note: record.note,
+        image_url: record.image_url,
+        actor: record.actor,
+      });
+    } catch {}
+  }
+
   const list = inMemoryStatusEvents.get(event.complaint_id) || [];
   list.push(record);
   inMemoryStatusEvents.set(event.complaint_id, list);
@@ -493,5 +593,19 @@ export async function addStatusEvent(
  * Gets the timeline of status events for a complaint.
  */
 export async function getStatusEvents(complaintId: string): Promise<StatusEventRecord[]> {
+  if (hasSupabaseConfig()) {
+    try {
+      const serverSupabase = getServiceSupabase();
+      const { data, error } = await serverSupabase
+        .from("status_events")
+        .select("*")
+        .eq("complaint_id", complaintId)
+        .order("created_at", { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        return data as StatusEventRecord[];
+      }
+    } catch {}
+  }
   return inMemoryStatusEvents.get(complaintId) || [];
 }
