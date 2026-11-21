@@ -5,6 +5,18 @@
 
 ---
 
+## Visual Interface & Architecture Preview
+
+| Landing & AI Triage Overview | Citizen Ward Tracking Dashboard |
+|---|---|
+| ![Landing Page](docs/screenshots/homepage-clean.png) | ![Citizen Dashboard](docs/screenshots/citizen-dashboard-clean.png) |
+
+| Municipal Command Console | Autonomous Multimodal Intake |
+|---|---|
+| ![Admin Command](docs/screenshots/admin-dashboard-clean.png) | ![Report Intake](docs/screenshots/report-verified.png) |
+
+---
+
 ## 1. Problem Statement & Real-World Evidence
 
 Urban citizens face broken roads, open manholes, leaking water mains, rotting garbage piles, and electrocution hazards daily, but reporting them is cumbersome, English-only, and confusing. On the receiving end, **municipal engineers receive duplicate, unsorted, and unprioritized complaints with zero indication of which hazard threatens human life.**
@@ -92,8 +104,8 @@ $$\text{Priority} = (\text{Severity} \times 20) + \min(\text{Duplicate Count}, 1
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/Praful0306/nagarnetra.git
-cd nagarnetra
+git clone https://github.com/Praful0306/IdeaForge_nxtWave.git
+cd IdeaForge_nxtWave
 npm install --legacy-peer-deps
 ```
 
